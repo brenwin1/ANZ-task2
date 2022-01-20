@@ -1,0 +1,27 @@
+"0","# --- annual salary 5-number summary 
+data_explore %>% 
+  select(annual_sal) %>% 
+  summary()
+"
+"1",""
+"1","   annual_sal    "
+"1","
+"
+"1"," Min.   : 28624  "
+"1","
+"
+"1"," 1st Qu.: 48858  "
+"1","
+"
+"1"," Median : 59810  "
+"1","
+"
+"1"," Mean   : 68702  "
+"1","
+"
+"1"," 3rd Qu.: 85992  "
+"1","
+"
+"1"," Max.   :141376  "
+"1","
+"

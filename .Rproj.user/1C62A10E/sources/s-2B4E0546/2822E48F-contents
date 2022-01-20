@@ -1,0 +1,288 @@
+---
+title: "ANZ Virtual Internship"
+subtitle: "<br/> Task 2"
+author: "Brenwin"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    seal: FALSE
+    lib_dir: libs
+    css: [default, "kunoichi", "ninjutsu"]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      navigation:
+        scroll: false
+---
+layout: true
+class: split-two white with-border
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
+options(htmltools.dir.version = FALSE)
+
+# --- load libraries
+library(tidyverse)
+library(readxl)
+library(tidymodels)
+library(rpart.plot)
+library(ggtext)
+library(glue)
+library(scales)
+library(patchwork)
+library(gtsummary)
+```
+
+# Annual salary for each customer
+```{r readin, include=FALSE}
+# --- read in raw data
+data <- readxl::read_xlsx("data/ANZ synthesised transaction dataset.xlsx")
+
+# --- data used
+data_explore <- data
+
+# --- compute annual salary 
+annual_sal <- data_explore %>% 
+  filter(txn_description == "PAY/SALARY") %>% 
+  group_by(account) %>% 
+  summarise(annual_sal = (sum(amount)/3) * 12)
+
+# --- join annual salary data set to data_explore
+data_explore <- left_join(data_explore, annual_sal,
+                          by = "account")
+
+# --- filtering out purchase transactions
+data_purchase <- data_explore %>% 
+  filter(txn_description %in% c("POS", "SALES-POS"))
+  # filter(merchant_id != "") # purchase transactions; must be associated with merchant 
+
+# --- remove attributes (variables); unrelated to annual salary 
+data_explore2 <- data_explore %>% 
+  select(-status, -card_present_flag, -bpay_biller_code, # binary values
+         -currency, # all AUD
+         -merchant_id, -merchant_code, -merchant_long_lat, # nothing to do with merchants
+         -first_name, # character type
+         -merchant_suburb, -merchant_state, # nothing to do with merchants
+         -extraction, # date & time irrelevant
+         -transaction_id, # irrelevant
+         -customer_id, # irrelevant
+         -country) # all in AUS
+
+# --- separate `long_lat` into 2 columns `lon` & `lat`
+data_explore2 <- data_explore2 %>% 
+  tidyr::separate(col = long_lat,
+                  sep = " -",
+                  into = c("lon", "lat")) %>% 
+  # turn `lon` & `lat`; into numeric 
+  mutate(lon = as.numeric(lon),
+         lat = as.numeric(lat))
+
+data_purchase <- data_purchase %>% 
+  group_by(account) %>% 
+  mutate(total_spend = sum(amount), # total spending: total purchase transactions amount
+         total_spend_vol = n()) %>% # total spending volume: number of purchase transactions
+  distinct(account,
+           .keep_all = T)
+
+# --- join data with purchase data 
+model_data <- data_purchase %>% 
+  select(account, total_spend, total_spend_vol) %>% 
+  right_join(data_explore2) %>% 
+  ungroup() %>% 
+  select(-txn_description, -date, -movement, -amount, -account)
+```
+
+```{r}
+anz_theme <- function(...){
+  theme(panel.background = element_rect(fill = "grey50"),
+        plot.background = element_rect(fill = "grey50"))
+}
+```
+
+
+
+.column[.content[
+.split-two[
+  .row.bg-indigo[.content[
+## annual salary 
+- since this is 3 months worth of data, the annual salary can be derived as: 
+$annual\ salary :\\ 12\times (avg.\ income\ over\ the\ 3\ months)$
+
+
+- annual salary of each customer is shown on the right 
+  ]]
+  .row.bg-indigo[.content[
+```{r ggpairs, fig.height=5}
+# --- generalised pairs plot 
+model_data %>% 
+  GGally::ggpairs() +
+  ggtitle("Generalised pairs plot") +
+  theme_bw()
+```
+
+  ]]
+]
+]]
+
+.column[.content[
+.split-two[
+  .row.bg-indigo[.content[
+```{r annual_sal, fig.height=5, fig.width=7}
+# --- plot annual salary for each customer 
+data_explore %>% 
+  ggplot() +
+  geom_point(aes(x = forcats::fct_reorder(account, annual_sal),
+                 y = annual_sal),
+             colour = "orange") +
+  theme_linedraw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ggtitle("Annual salary for each customer") +
+  labs(y = "Annual Salary",
+       x = "Account") +
+  # add horizontal line @ mean annual salary
+  geom_hline(yintercept = mean(annual_sal$annual_sal),
+             lty = 2) + # dashed line
+  # add arrow for annotating mean annual salary
+  geom_curve(aes(x = 10, y = 79000,
+                 xend = 10.3, yend = 67000),
+             arrow = arrow(angle = 30,
+                           length = unit(0.2, "cm"))) +
+  # add richtext annotation; for mean annual salary
+  annotate(geom = "richtext",
+           x = 15, y = 80000,
+           label = glue::glue("mean salary: {annual_sal$annual_sal}")) +
+  
+  theme(
+    # background
+    panel.background = element_rect(fill = "grey55"),
+    plot.background = element_rect(fill = "grey55"),
+    
+    # legend (if any)
+    legend.position = "right",
+    legend.background = element_blank(),
+    legend.key = element_blank(),
+    legend.text = element_text(colour = "sky blue"),
+    legend.title = element_text(colour = "sky blue"),  
+    
+    # plot title & subtitle
+    plot.title = element_text(size = 20,
+                              face = "bold", 
+                              colour = "sky blue"),
+    plot.subtitle = element_text(size = 16, 
+                                 colour = "sky blue"),
+    
+    # axis 
+    axis.title = element_text(colour = "sky blue",
+                              size = 15),
+    axis.text = element_text(colour = "sky blue")
+  ) 
+```
+  ]]
+  .row.bg-indigo[.content[
+## correlation between covariates 
+- generalised pairs plot on the left shows correlation between customers' annual salary and the various available and derived customer attributes
+  - these includes total spending (`total_spend`), spending volume (`total_spend_vol`), `longitude`, `latitude`, `balance`, `gender` and `age`, 
+  ]]
+]
+]]
+
+
+---
+class: fade-row1-col2 fade-row2-col1 fade-row2-col2
+count: false
+
+---
+class: fade-row2-col1 fade-row2-col2
+count: false
+
+---
+class: fade-row2-col1
+count: false
+
+---
+count: true
+
+---
+layout: false
+
+# regression
+- Building a simple regression model with the following covariates: (I) `total_spend` (total spendings over 3 months), (II) `total_spend_vol` (total spending volume) `balance` (account closing balance), (IV) `gender` (V) `age`
+
+```{r}
+fit_lm <- stats::lm(annual_sal ~ total_spend + total_spend_vol + balance + gender + age,
+                    data = model_data)
+
+fit_lm %>% 
+  gtsummary::tbl_regression()
+```
+```{r}
+lm_visreg <- fit_lm %>% 
+  visreg::visreg(gg = T) 
+
+# --- partial residual plots
+
+# `annual_sal` vs. `total_spend`
+total_spend_pr <- lm_visreg[[1]] +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  scale_x_continuous(labels = scales::dollar_format()) +
+  labs(x = "total spending",
+       y = "annual salary") +
+  theme_bw()
+
+# `annual_sal` vs. `total_spend_volume`
+total_spend_vol_pr <- lm_visreg[[2]] +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  labs(x = "total spending volume",
+       y = "") +
+  theme_bw()
+
+# `annual_sal` vs. `balance`
+balance_pr <- lm_visreg[[3]] +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  scale_x_continuous(labels = scales::dollar_format()) +
+  labs(x = "closing balance",
+       y = "annual salary") +
+  theme_bw()
+
+# `annual_sal` vs. `gender`
+gender_pr <- lm_visreg[[4]] +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  labs(x = "gender",
+       y = "") +
+  theme_bw()
+
+# `annual_sal` vs. `age`
+age_pr <- lm_visreg[[5]] +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  labs(x = "age",
+       y = "annual salary") +
+  theme_bw()
+
+total_spend_pr + total_spend_vol_pr + balance_pr + gender_pr + age_pr + 
+  plot_layout(heights = 1,
+              widths = 1,
+              ncol = 2) +
+  plot_annotation(
+    # add title
+    title = "partial residual plots",
+    theme = theme_gray(base_family = "mono", # set font family
+                       base_size = 13), # set font size
+                  
+    # tags
+    tag_levels = "I", # uppercase roman numerics
+    tag_prefix = "(",
+    tag_suffix = ")"
+                  )
+              
+                                                                                        
+```
+
+
+
+
+
+
+
+
+

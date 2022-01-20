@@ -1,0 +1,9 @@
+"0","# --- join data with purchase data 
+model_data <- data_purchase %>% 
+  select(account, total_spend, total_spend_vol) %>% 
+  right_join(data_explore2) %>% 
+  ungroup() %>% 
+  select(-txn_description, -date, -movement, -amount, -account)
+"
+"1","Joining, by = ""account""
+"

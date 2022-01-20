@@ -1,0 +1,444 @@
+---
+title: "ANZ Virtual Internship 1"
+subtitle: "<br/> Task 1"
+author: "Brenwin"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    seal: FALSE
+    lib_dir: libs
+    css: [default, "kunoichi", "ninjutsu"]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+layout: true
+class: split-two white with-border
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+options(htmltools.dir.version = FALSE)
+
+# load libraries
+library(tidyverse)
+library(readxl) # to read in excel files
+library(naniar)
+library(lubridate)
+library(ggpp)
+library(patchwork)
+```
+
+```{r readin, include=FALSE}
+data <- readxl::read_xlsx("data/ANZ synthesised transaction dataset.xlsx")
+
+data_explore <- data
+```
+
+.column.bg-indigo[
+.split-three[
+  .row[.content[
+  ## Data Quality
+  Variable names are correctly and consistently formatted
+
+  Overall, other than some data wrangling required for analysis, the data set is relatively clean. 
+
+  ]]
+  .row[.content[
+  .pink[### Missings]
+  99% of data in `bpay_biller_code` & `merchant_code` are unavailable. 
+
+  There were 4,326 of 12,043 rows of missing information relating to merchants.
+  
+  No structure appear to exist in missing values 
+  ]]
+  .row[.content[
+  .pink[### outliers]
+  The data is skewed mostly to the right.
+
+  The is dealt with my trimming the data to the 5th to 90th percentile
+  ]]
+]
+]
+
+.column.bg-indigo[
+  .row[.content[
+```{r missings, fig.height=4, fig.width=5, cache=TRUE}
+naniar::vis_miss(data_explore,
+                 cluster = TRUE,
+                 sort_miss = TRUE) +
+  # background
+  theme(panel.background = element_rect(fill = "grey35"),
+        plot.background = element_rect(fill = "grey35")) +
+  # plot title & subtitle
+  theme(plot.title = element_text(size = 20,
+                                  face = "bold", 
+                                  colour = "sky blue"),
+        plot.subtitle = element_text(size = 16, 
+                                     colour = "sky blue")) +
+  # axis 
+  theme(axis.title = element_text(colour = "sky blue",
+                                  size = 15),
+        axis.text = element_text(colour = "sky blue")) +
+  # legend
+  theme(legend.position = "right",
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.text = element_text(colour = "sky blue"),
+        legend.title = element_text(colour = "sky blue"))
+```
+  ]]
+  .row[.content[
+```{r data-explore, fig.height=4, fig.width=6}
+data_explore <- data_explore %>% 
+  # put date bfeore account
+  dplyr::relocate(date,
+                  .before = account) %>% 
+  # include month// week// day 
+  mutate(month = lubridate::month(date),
+         week = lubridate::week(date),
+         wday = lubridate::wday(date,
+                                label = TRUE),
+         mday = lubridate::mday(date),
+         .after = date) 
+```
+
+```{r extreme-cases, fig.height=4, fig.width=6}
+data_explore <- data_explore %>% 
+  # trim 10% of extreme observations
+  mutate(extreme = case_when(
+    amount >= quantile(amount, 0.90) ~ "upper 10%",
+    amount <= quantile(amount, 0.05) ~ "lower 5%",
+    TRUE ~ "Majority"
+  )) 
+
+data_explore %>% 
+  ggplot(aes(x = "",
+             y = amount)) +
+  ggbeeswarm::geom_quasirandom(aes(color = extreme)) +
+  coord_flip() +
+  scale_y_continuous(breaks = seq(from = 0, to = 9000, by = 1000)) +
+  ggplot2::scale_colour_manual(name = "Extremes",
+                               values = c("#ff69b4", "#1e90ff", "#ffbf00"),
+                               labels = c("lower 5%", "Majority", "upper 10%")) +
+  ggtitle("Classifying transactions into 3 clusters") +
+  # background
+  theme(panel.background = element_rect(fill = "grey35"),
+        plot.background = element_rect(fill = "grey35")) +
+  # legend
+  theme(legend.position = "right",
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.text = element_text(colour = "sky blue"),
+        legend.title = element_text(colour = "sky blue")) + 
+  # plot title & subtitle
+  theme(plot.title = element_text(size = 20,
+                                  face = "bold", 
+                                  colour = "sky blue"),
+        plot.subtitle = element_text(size = 16, 
+                                     colour = "sky blue")) +
+  # axis 
+  theme(axis.title = element_text(colour = "sky blue",
+                                  size = 15),
+        axis.text = element_text(colour = "sky blue"))
+```
+  ]]
+]
+
+---
+class: fade-row2-col1 fade-row3-col1 fade-row1-col2 fade-row2-col2
+count: false
+
+---
+class: fade-row3-col1 fade-row2-col2
+count: false
+
+---
+count: false
+
+---
+layout: true
+class: split-two white with-border
+
+```{r}
+# === segment data; by transaction date & time 
+# --- extract date time; from `extraction` column
+
+data_explore1 <- data_explore %>% 
+  # extract time from `extraction`
+  separate(extraction,
+           into = c("date1", "time"),
+           sep = "T")  
+  
+# remove milliseconds from time
+data_explore1$time <- stringr::str_remove(string = data_explore1$time, 
+                                          pattern = "\\..+") # remove everything; after "."
+
+# combine `date1` `time` column; into date_time 
+data_explore1 <- data_explore1 %>% 
+  tidyr::unite(col = date_time,
+               c(date1, time),
+               sep = " ")
+
+# change `date_time` column type; as_datetime
+data_explore1$date_time <- as_datetime(data_explore1$date_time)
+
+# --- add hour column
+data_explore1 <- data_explore1 %>% 
+  mutate(hour = lubridate::hour(date_time),
+         .after = mday)
+```
+
+```{r}
+# === visualise transaction volume & spending; over course of avg. day of the month(1-31)// day of the week(Mon-Fri)// day (24 hours)
+# --- day in the month 
+
+# --- day in the month 
+
+# transaction volume i.e. no. of transactions (geom_bar)
+p1 <- data_explore1 %>% 
+  group_by(mday) %>% 
+  ggplot() +
+  geom_bar(aes(x = mday,
+               fill = movement)) +
+  scale_x_continuous(breaks = seq(from = 1, to = 31, by = 1)) +
+  labs(title = "Transaction\nVolume",
+       subtitle = "Day of the month") +
+  colorspace::scale_fill_discrete_qualitative() +
+  theme(plot.title = element_text(hjust = 0.5,
+                                  size = 30,
+                                  face = "bold"),
+        axis.text.x = element_text(angle = 90)) 
+
+# transaction spending i.e. amount (geom_col)
+p2 <- data_explore1 %>% 
+  group_by(mday) %>% 
+  ggplot() +
+  geom_col(aes(x = mday,
+               y = amount,
+               fill = movement)) +
+  scale_x_continuous(breaks = seq(from = 1, to = 31, by = 1)) +
+  labs(title = "Transaction\n Amount",
+       subtitle = "Day of the month") +
+  scale_y_continuous(label = scales::dollar_format()) +
+  theme_bw() +
+  colorspace::scale_fill_discrete_qualitative() +
+  theme(plot.title = element_text(hjust = 0.5,
+                                  size = 30,
+                                  face = "bold"),
+        axis.text.x = element_text(angle = 90)) +
+  theme(legend.position = "none")
+
+# --- day of the week
+
+# transaction volume i.e. no. of transactions (geom_bar)
+p3 <- data_explore1 %>% 
+  ggplot() +
+  geom_bar(aes(x = wday,
+               fill = movement)) +
+  ggtitle("Day of the week") +
+  theme_bw() +
+  colorspace::scale_fill_discrete_qualitative() +
+  theme(legend.position = "none")
+  
+
+# transaction spending i.e. amount (geom_col)
+p4 <- data_explore1 %>% 
+  ggplot() +
+  geom_col(aes(x = wday,
+               y = amount,
+               fill = movement)) +
+  ggtitle("Day of the week") +
+  scale_y_continuous(label = scales::dollar_format()) +
+  theme_bw() +
+  colorspace::scale_fill_discrete_qualitative() +
+  theme(legend.position = "none")
+
+# --- time of day
+
+# transaction volume i.e. no. of transactions (geom_bar)
+p5 <- data_explore1 %>% 
+  ggplot() +
+  geom_bar(aes(x = hour,
+               fill = movement)) +
+  scale_x_continuous(breaks = seq(from = 0, to = 23, by = 1)) +
+  ggtitle("By the hour") +
+  theme_bw() +
+  colorspace::scale_fill_discrete_qualitative() +
+  theme(legend.position = "none")
+
+# transaction spending i.e. amount (geom_col)
+p6 <- data_explore1 %>% 
+  group_by(hour) %>% 
+  ggplot() +
+  geom_col(aes(x = hour,
+               y = amount,
+               fill = movement)) +
+  scale_x_continuous(breaks = seq(from = 0, to = 23, by = 1)) +
+  ggtitle("By the hour") +
+  scale_y_continuous(label = scales::dollar_format()) +
+  theme_bw() +
+  colorspace::scale_fill_discrete_qualitative() +
+  theme(legend.position = "none")
+```
+
+.column.bg-indigo[.content[
+# Segmenting by date and time
+Data was segmented according to date and time - Day of the month, Day of the week and hourly (24-hours)
+
+Transaction volume and amount are then plotted. Coloured by debit and credit transaction. (shown on the right)
+
+Interestingly, 16th of each month sees the lowest transaction volume and spending. <br>
+Upon investigation, this was because no transactions occured on August 16. (missing data?)
+
+Credit transactions .yellow[only] occur between 11am to 5pm on weekdays. <br>
+Debit transactions occur all week and throughout the day. 
+
+Generally, transactions peak in working hours (9am - 5pm) and are more erratic at other times
+
+]]
+
+.column.bg-indigo[.content[
+## plots of transaction volume & amount 
+```{r trans-vol, fig.height=11, fig.width=11}
+(p1 + p2) / (p3 + p4) / (p5 + p6) +
+  plot_layout(guides = "collect")
+```
+]]
+
+
+
+
+---
+class: gray-col2
+
+---
+count: false
+
+---
+layout: true
+class: split-two white 
+
+.row.bg-indigo[
+# Spatial Analysis
+.yellow[K-means algorithm] (unsupervised classification); identifying 3 potential clusters. <br>
+Group 1 (pink): 2,218 observations *in South South West region <br>
+Group 2 (blue): 9,702 observations *in South West region <br>
+Group 3 (orange): 123 observations *in North East region
+
+Density for spending amounts are plotted for each of the the 3 clusters <br>
+Can be ascertained that Group 1 & 2 have similar spending habits. <br>
+Group 3 tend to spend higher amounts on average. <br>
+Perhaps a difference surburbs? (urban/suburban?)
+
+Further analysis show this spending manifests even in high transaction amounts. <br>
+That is, Group 3 tend to transact at higher amounts on average
+
+]
+
+.row.bg-indigo[.content[
+  .split-two[
+  .column[
+```{r kmeans, fig.height = 5}
+# --- separate `long_lat` into 2 columns `lon` & `lat`
+data_explore2 <- data_explore1 %>% 
+  tidyr::separate(col = long_lat,
+                  sep = " -",
+                  into = c("lon", "lat")) %>% 
+  # turn `lon` & `lat`; into numeric 
+  mutate(lon = as.numeric(lon),
+         lat = as.numeric(lat))
+
+# run k-means (unsupervised classificaiton)
+# -> group observations into k = 3 groups 
+data_explore2$kmeans <- stats::kmeans(base::scale(data_explore2[,c(12,13)]),
+                                      centers = 3,  # k = 3 groups
+                                      nstart = 10)$cluster # no. of random starts *for robustness 
+
+data_explore2 %>% 
+  ggplot() +
+  geom_point(aes(x = lon,
+                 y = lat,
+                 colour = factor(kmeans))) +
+  ggplot2::scale_colour_manual(name = "Kmeans groups",
+                               values = c("#ff69b4", "#1e90ff", "#ffbf00"),
+                               labels = c("Group 1", "Group 2", "Group 3")) +
+  ggtitle("Classifying accounts into 3 clusters") +
+  theme_minimal() +
+  # background
+  theme(panel.background = element_rect(fill = "grey35"),
+        plot.background = element_rect(fill = "grey35")) +
+  # legend
+  theme(legend.position = "right",
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.text = element_text(colour = "sky blue"),
+        legend.title = element_text(colour = "sky blue")) + 
+  # plot title & subtitle
+  theme(plot.title = element_text(size = 20,
+                                  face = "bold", 
+                                  colour = "sky blue"),
+        plot.subtitle = element_text(size = 16, 
+                                     colour = "sky blue")) +
+  # axis 
+  theme(axis.text = element_blank(),
+        axis.title = element_text(colour = "sky blue",
+                                  size = 15)) 
+```
+  ]
+  .column[
+```{r kmeans-dens, fig.height = 5}
+data_explore2 %>% 
+  # filter to majority of transactions
+  filter(extreme == "Majority") %>% 
+  # density plot 
+  ggplot() +
+  geom_density(aes(x = amount,
+                   y = ..density..,
+                   group = factor(kmeans),
+                   fill = factor(kmeans)),
+               alpha = 0.3) +
+  colorspace::scale_fill_discrete_qualitative(name = "Kmeans groups",
+                                              labels = c("Group 1", "Group 2", "Group 3")) +
+  theme_bw() +
+  ggtitle("Overall spending in each cluster") +
+  # background
+  theme(panel.background = element_rect(fill = "grey35"),
+        plot.background = element_rect(fill = "grey35")) +
+  # legend
+  theme(legend.position = "right",
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.text = element_text(colour = "sky blue"),
+        legend.title = element_text(colour = "sky blue")) + 
+  # plot title & subtitle
+  theme(plot.title = element_text(size = 20,
+                                  face = "bold", 
+                                  colour = "sky blue"),
+        plot.subtitle = element_text(size = 16, 
+                                     colour = "sky blue")) +
+  # axis 
+  theme(axis.text = element_text(colour = "sky blue"),
+        axis.title = element_text(colour = "sky blue",
+                                  size = 15)) 
+  
+```
+  ]
+  ]
+]]
+
+
+---
+class: fade-row2
+count: true
+
+---
+count: false
+
+
+
+
+
+
+
+

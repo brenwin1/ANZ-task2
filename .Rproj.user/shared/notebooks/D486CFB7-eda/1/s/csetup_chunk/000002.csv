@@ -1,0 +1,6 @@
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0",""
+"0","# --- load libraries"
+"0","library(tidyverse)"
+"0","library(readxl) # read in xl files"
+"0","library(tidymodels)"

@@ -1,0 +1,2 @@
+"0","data_explore <- left_join(data_explore, annual_sal,"
+"0","                          by = ""account"") "

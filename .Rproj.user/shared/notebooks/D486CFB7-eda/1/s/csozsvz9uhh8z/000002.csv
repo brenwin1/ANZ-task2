@@ -1,0 +1,6 @@
+"0","data_explore2 %>% "
+"0","  ggplot(aes(x = gender,"
+"0","             y = annual_sal)) +"
+"0","  geom_boxplot() +"
+"0","  theme_bw() +"
+"0","  scale_y_continuous(labels = scales::dollar_format())"

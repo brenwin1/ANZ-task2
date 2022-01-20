@@ -1,0 +1,10 @@
+"0","fit_lm %>% 
+  gtsummary::tbl_regression() %>% 
+  gtsummary::add_glance_source_note() %>% 
+  class()
+"
+"1","[1]"
+"1"," ""tbl_regression"""
+"1"," ""gtsummary""     "
+"1","
+"

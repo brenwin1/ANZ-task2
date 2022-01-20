@@ -1,0 +1,12 @@
+"0","# --- plot rpart model"
+"0","rpart.plot::prp(fit_tree$fit,"
+"0","                type = 3, # draw separate split labels; for left & right directions"
+"0","                ni = T, # display node indeces"
+"0","                nn = T, # display node numbers"
+"0","                box.palette = ""RdBu"") # palette to colour node boxes"
+"2","Warning:"
+"2"," Cannot retrieve the data used to build the model (model.frame: object 'total_spend' not found).
+To silence this warning:
+    Call prp with roundint=FALSE,
+    or rebuild the rpart model with model=TRUE.
+"

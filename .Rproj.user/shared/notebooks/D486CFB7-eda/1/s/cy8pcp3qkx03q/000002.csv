@@ -1,0 +1,8 @@
+"0","# --- separate `long_lat` into 2 columns `lon` & `lat`"
+"0","data_explore2 <- data_explore2 %>% "
+"0","  tidyr::separate(col = long_lat,"
+"0","                  sep = "" -"","
+"0","                  into = c(""lon"", ""lat"")) %>% "
+"0","  # turn `lon` & `lat`; into numeric "
+"0","  mutate(lon = as.numeric(lon),"
+"0","         lat = as.numeric(lat))"

@@ -1,0 +1,4 @@
+"0","anz_theme <- function(...){"
+"0","  theme(panel.background = element_rect(fill = ""grey50""),"
+"0","        plot.background = element_rect(fill = ""grey50""))"
+"0","}"

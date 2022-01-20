@@ -1,0 +1,5 @@
+"0","# --- annual salary "
+"0","annual_sal <- data_explore %>% "
+"0","  filter(txn_description == ""PAY/SALARY"") %>% "
+"0","  group_by(account) %>% "
+"0","  summarise(annual_sal = (sum(amount)/3) * 12)"

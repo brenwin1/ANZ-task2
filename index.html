@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>ANZ Virtual Internship</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Brenwin" />
+    <meta name="date" content="2022-01-20" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/kunoichi.css" rel="stylesheet" />
+    <link href="libs/remark-css/ninjutsu.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+
+layout: true
+class: split-two white with-border
+
+
+
+# Annual salary for each customer
+
+
+
+
+
+
+.column[.content[
+.split-two[
+  .row.bg-indigo[.content[
+## annual salary 
+- since this is 3 months worth of data, the annual salary can be derived as: 
+`\(annual\ salary :\\ 12\times (avg.\ income\ over\ the\ 3\ months)\)`
+
+
+- annual salary of each customer is shown on the right 
+  ]]
+  .row.bg-indigo[.content[
+![](slides_files/figure-html/ggpairs-1.png)&lt;!-- --&gt;
+
+  ]]
+]
+]]
+
+.column[.content[
+.split-two[
+  .row.bg-indigo[.content[
+![](slides_files/figure-html/annual_sal-1.png)&lt;!-- --&gt;
+  ]]
+  .row.bg-indigo[.content[
+## correlation between covariates 
+- generalised pairs plot on the left shows correlation between customers' annual salary and the various available and derived customer attributes
+  - these includes total spending (`total_spend`), spending volume (`total_spend_vol`), `longitude`, `latitude`, `balance`, `gender` and `age`, 
+  ]]
+]
+]]
+
+
+---
+class: fade-row1-col2 fade-row2-col1 fade-row2-col2
+count: false
+
+---
+class: fade-row2-col1 fade-row2-col2
+count: false
+
+---
+class: fade-row2-col1
+count: false
+
+---
+count: true
+
+---
+exclude: true
+layout: false
+count: false
+
+# HELLO
+
+---
+layout: true
+class: split-two white with-border
+
+.column[.content[
+.split-two[
+  .row.bg-indigo[.content[
+## regression
+- Building a simple regression model with the following covariates: (I) `total_spend` (total spendings over 3 months), (II) `total_spend_vol` (total spending volume) `balance` (account closing balance), (IV) `gender` (V) `age`
+
+  ]]
+  
+  .row.bg-indigo[.content[
+## regression output
+<div id="fnzlsdolkt" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#fnzlsdolkt .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#fnzlsdolkt .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#fnzlsdolkt .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#fnzlsdolkt .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#fnzlsdolkt .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#fnzlsdolkt .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#fnzlsdolkt .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#fnzlsdolkt .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#fnzlsdolkt .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#fnzlsdolkt .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#fnzlsdolkt .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#fnzlsdolkt .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#fnzlsdolkt .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#fnzlsdolkt .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fnzlsdolkt .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fnzlsdolkt .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#fnzlsdolkt .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#fnzlsdolkt .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fnzlsdolkt .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#fnzlsdolkt .gt_left {
+  text-align: left;
+}
+
+#fnzlsdolkt .gt_center {
+  text-align: center;
+}
+
+#fnzlsdolkt .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#fnzlsdolkt .gt_font_normal {
+  font-weight: normal;
+}
+
+#fnzlsdolkt .gt_font_bold {
+  font-weight: bold;
+}
+
+#fnzlsdolkt .gt_font_italic {
+  font-style: italic;
+}
+
+#fnzlsdolkt .gt_super {
+  font-size: 65%;
+}
+
+#fnzlsdolkt .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>Beta</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>p-value</strong></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">total_spend</td>
+<td class="gt_row gt_center">0.43</td>
+<td class="gt_row gt_center">0.11, 0.74</td>
+<td class="gt_row gt_center">0.008</td></tr>
+    <tr><td class="gt_row gt_left">total_spend_vol</td>
+<td class="gt_row gt_center">-43</td>
+<td class="gt_row gt_center">-50, -36</td>
+<td class="gt_row gt_center"><0.001</td></tr>
+    <tr><td class="gt_row gt_left">balance</td>
+<td class="gt_row gt_center">0.19</td>
+<td class="gt_row gt_center">0.18, 0.21</td>
+<td class="gt_row gt_center"><0.001</td></tr>
+    <tr><td class="gt_row gt_left">gender</td>
+<td class="gt_row gt_center"></td>
+<td class="gt_row gt_center"></td>
+<td class="gt_row gt_center"></td></tr>
+    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">F</td>
+<td class="gt_row gt_center">—</td>
+<td class="gt_row gt_center">—</td>
+<td class="gt_row gt_center"></td></tr>
+    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">M</td>
+<td class="gt_row gt_center">-33</td>
+<td class="gt_row gt_center">-950, 883</td>
+<td class="gt_row gt_center">>0.9</td></tr>
+    <tr><td class="gt_row gt_left">age</td>
+<td class="gt_row gt_center">-113</td>
+<td class="gt_row gt_center">-158, -67</td>
+<td class="gt_row gt_center"><0.001</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="4">R² = 0.087; Adjusted R² = 0.087; Sigma = 24,805; Statistic = 230; p-value = &lt;0.001; df = 5; Log-likelihood = -138,946; AIC = 277,906; BIC = 277,958; Deviance = 7,406,174,123,033; Residual df = 12,037; No. Obs. = 12,043</td>
+    </tr>
+  </tfoot>
+  <tfoot>
+    <tr class="gt_footnotes">
+      <td colspan="4">
+        <p class="gt_footnote">
+          <sup class="gt_footnote_marks">
+            <em>1</em>
+          </sup>
+           
+          CI = Confidence Interval
+          <br />
+        </p>
+      </td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+  ]]]
+]]
+
+.column[.content[
+.split-two[
+  .row.bg-indigo[.content[
+![](slides_files/figure-html/lm-patchwork-1.png)&lt;!-- --&gt;
+  ]]
+  
+  .row.bg-indigo[.content[
+## conclusion
+- above regression model has only a `\(adj.\ R^2\)` value of `\(0.09\)` which implies that model is not very accurate 
+  - suggesting missing covariates or linear regression may not be appropriate
+- partial residual plots shows residuals left after `\(y\)` is adjusted for all other variables except `\(x_j\)`
+  - it also supports the claim that linearity may be insufficient to explain the relationship 
+  - additionally, shows the actual regression `\(\beta\)` line
+  
+- hence ANZ should NOT segment customers into income brackets for reporting purposes
+  ]]]
+]]
+
+--- 
+class: fade-row1-col2 fade-row2-col1 fade-row2-col2
+count: false
+
+---
+class: fade-row2-col1 fade-row2-col2
+count: false
+
+---
+class: fade-row2-col2
+count: false
+
+---
+count: true
+
+---
+exclude: true
+layout: false
+count: false
+
+---
+layout: true
+class: split-two white with-border
+
+.row.bg-indigo[.content[
+## Decision Tree and testing
+
+
+![](slides_files/figure-html/rpart-tree-1.png)&lt;!-- --&gt;
+]]
+
+.row.bg-indigo[.content[
+.split-two[
+  .column[.content[
+- from linear analysis in the previous slide, it is established that the relationship between `annual salary` and the covariates are mostly non-linear
+- therefore, the decision tree wouuld work better in this scenario
+  ]]
+  
+  .column[.content[
+- To test the performance of the model, we first split the data into say 2/3 training and 1/3 test set. Then, the model is fitted using the training set and evaluated against the test set which is completely unseen by the model. 
+
+*Furthermore, cross validation (including an extra cross validation set) could also be used to tune the parameters such as `cost_complexity` and `minsplit`.
+  ]]]
+]]
+
+---
+class: fade-row2-col1 fade-row-col2
+count: false
+
+--- 
+class: fade-row2-col2
+count: false
+
+---
+count: true
+
+---
+exclude: true
+layout: false
+count: false
+
+
+
+
+
+
+
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"navigation": {
+"scroll": false
+}
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

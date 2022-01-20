@@ -1,0 +1,9 @@
+"0","data_explore2 %>% "
+"0","  ggplot(aes(x = age,"
+"0","             y = annual_sal)) +"
+"0","  geom_point() +"
+"0","  geom_smooth(method = ""lm"") +"
+"0","  colorspace::scale_color_discrete_qualitative() +"
+"0","  theme_bw()"
+"2","`geom_smooth()` using formula 'y ~ x'
+"

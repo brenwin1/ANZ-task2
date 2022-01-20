@@ -1,0 +1,298 @@
+---
+title: "eda"
+author: "Brenwin"
+date: "24/07/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# --- load libraries
+library(tidyverse)
+library(readxl) # read in xl files
+library(tidymodels)
+```
+
+# Read in data
+```{r}
+# --- read in raw data
+data <- readxl::read_xlsx("data/ANZ synthesised transaction dataset.xlsx")
+
+# --- `data_explore`
+data_explore <- data
+```
+- 12,043 rows (transactions) for 100 customers (one bank `account` each)
+- 01/08/2018 - 31/10/2018 (92 days duration)
+  - only 91 unique dates in data set (transaction record for 1 day missing; on 16/08/2018)
+
+# visualise missing data: `naniar::vis_miss`
+```{r vis_miss, eval=FALSE}
+data_explore %>% 
+  naniar::vis_miss(cluster = T)
+```
+
+- some columns contain missing data; likely due to nature of transaction
+  - e.g. merchants; not involved in Interbank transfers or salary payment
+
+
+# identify annual salary for each customer; join with data 
+```{r}
+# --- compute annual salary 
+annual_sal <- data_explore %>% 
+  filter(txn_description == "PAY/SALARY") %>% 
+  group_by(account) %>% 
+  summarise(annual_sal = (sum(amount)/3) * 12)
+```
+
+annual salary for each customer: $12\times(avg.\ income\ over\ the\ 3\ months)$
+
+```{r}
+# --- join annual salary data set to data_explore
+data_explore <- left_join(data_explore, annual_sal,
+                          by = "account") 
+```
+
+### plot annual salary of each customer 
+```{r}
+# --- plot annual salary for each customer 
+data_explore %>% 
+  ggplot() +
+  geom_point(aes(x = forcats::fct_reorder(account, annual_sal),
+                 y = annual_sal)) +
+  theme_linedraw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ggtitle("Annual salary for each customer") +
+  labs(y = "Annual Salary",
+       x = "Account")
+```
+
+### five number summary of customers' salary
+```{r sal_five_num_sum}
+# --- annual salary 5-number summary 
+data_explore %>% 
+  select(annual_sal) %>% 
+  summary()
+```
+
+
+# Explore correlations between annual salary & various customer attributes(variables)
+
+- attributes could be those available or derived
+  - those; relevant to salary
+
+```{r}
+# remove attributes (variables); unrelated to annual salary 
+data_explore2 <- data_explore %>% 
+  select(-status, -card_present_flag, -bpay_biller_code, # binary values
+         -currency, # all AUD
+         -merchant_id, -merchant_code, -merchant_long_lat, # nothing to do with merchants
+         -first_name, # character type
+         -merchant_suburb, -merchant_state, # nothing to do with merchants
+         -extraction, # date & time irrelevant
+         -transaction_id, # irrelevant
+         -customer_id, # irrelevant
+         -country) # all in AUS
+```
+
+```{r}
+# --- separate `long_lat` into 2 columns `lon` & `lat`
+data_explore2 <- data_explore2 %>% 
+  tidyr::separate(col = long_lat,
+                  sep = " -",
+                  into = c("lon", "lat")) %>% 
+  # turn `lon` & `lat`; into numeric 
+  mutate(lon = as.numeric(lon),
+         lat = as.numeric(lat))
+```
+
+- attributes include 
+  - `lat`, `lon`
+  - `txn_description` *to derive purchasing behaviour
+  - `balance`
+  - customer attributes: `gender`, `age`
+  - miscs: `date`, `amount`, `movement`
+
+```{r, message=FALSE, warning=FALSE}
+data_explore2[,-1] %>% 
+  GGally::ggpairs()
+```
+
+## `annual_sal` vs. `age`
+```{r}
+data_explore2 %>% 
+  ggplot(aes(x = age,
+             y = annual_sal)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  colorspace::scale_color_discrete_qualitative() +
+  theme_bw()
+```
+
+- one might expect a linear r/s; but none observed
+  - number of customers particularly after about 40 years of age seem to deviate from the trend
+  
+## `annual_sal` vs. `balance`
+```{r}
+data_explore2 %>% 
+  ggplot(aes(x = balance,
+             y = annual_sal)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+```
+- a linear r/s might not be appropriate 
+
+## `annual_sal` vs. `lon` & `lat`
+```{r}
+# `annual_sal` vs. `lon`
+data_explore2 %>% 
+  ggplot(aes(x = lon,
+             y = annual_sal)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+# `annual_sal` vs. `lat`
+data_explore2 %>% 
+  ggplot(aes(x = lat,
+             y = annual_sal)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+```
+
+- not much r/s can be gleaned for `annual_sal` and `lat` & `lon`
+  - linear assumption might not be appropriate 
+
+## `annual_sal` vs. purchasing behaviour
+```{r}
+# --- filtering out purchase transactions
+data_purchase <- data_explore %>% 
+  filter(txn_description %in% c("POS", "SALES-POS"))
+  # filter(merchant_id != "") # purchase transactions; must be associated with merchant 
+
+data_purchase <- data_purchase %>% 
+  group_by(account) %>% 
+  mutate(total_spend = sum(amount), # total spending: total purchase transactions amount
+         total_spend_vol = n()) %>% # total spending volume: number of purchase transactions
+  distinct(account,
+           .keep_all = T)
+```
+
+```{r}
+# higher annual salary, higher purchase transaction amt.?
+data_purchase %>% 
+  ggplot(aes(x = total_spend,
+             y = annual_sal)) +
+  geom_point() +
+  # add smooth line 
+  geom_smooth(method = "lm",
+              colour = "blue",
+              se = T) +
+  theme_bw()
+```
+
+- one might hypothesise that `total_spend` increases with `annual_sal` but that does not seem the case
+  - i.e. hypothesis that higher salary beget higher spendings proves incorrect
+  - considerable number of outliers
+
+```{r}
+# higher annual salary, higher purchase transaction volume?
+data_purchase %>% 
+  ggplot(aes(x = total_spend_vol,
+             y = annual_sal)) +
+  geom_point() +
+  # add smooth line 
+  geom_smooth(method = "lm",
+              colour = "blue",
+              se = T) +
+  theme_bw()
+```
+
+- linear assumption may not be appropriate 
+- as `total_spend_vol` increases `annual_sal` seem to dip slightly; althought not very clear
+  - high deviation 
+  
+## `annual_sal` vs. `gender` boxplot
+```{r}
+data_explore2 %>% 
+  ggplot(aes(x = gender,
+             y = annual_sal)) +
+  geom_boxplot() +
+  theme_bw() +
+  scale_y_continuous(labels = scales::dollar_format())
+```
+
+- on average, men earned a slightly more than females
+
+# build simple regression model; predict annual salary for each customer; using attributes above
+
+- covariates
+  - `age`
+  - `gender`
+  - `balance`
+  - `lon`
+  - `lat`
+  - `total_spend`
+  - `total_spend_vol`
+
+```{r}
+# --- join data with purchase data 
+model_data <- data_purchase %>% 
+  select(account, total_spend, total_spend_vol) %>% 
+  right_join(data_explore2) %>% 
+  ungroup() %>% 
+  select(-txn_description, -date, -movement, -amount, -account)
+```
+```{r}
+# --- fit linear regression model
+fit_lm <- stats::lm(annual_sal ~ total_spend + total_spend_vol + balance + gender + age,
+                    data = model_data)
+
+summary(fit_lm)
+```
+### is above model accurate? Should ANZ use it to segment customers (for whom it does not have this data) into income brackets for reporting purposes?
+```{r}
+fit_lm %>% 
+  visreg::visreg()
+```
+
+- The above regression model has an $adj.\ R^2$ value of $0.104$ which implies the model is not very accurate. 
+
+- As can be observed in the partial residual plots above, the linear r/s is not that strong across most of not all the covariates.    
+  - This is to say even for customers with similar annual salary, their attributes and purchasing behaviour can vary widely
+  --- hence ANZ should NOT segment customers into income brackets for reporting purposes
+
+# for a challenge: build a decision-tree based model to predict salary. does it perform better? how would you accurately test the performance of this model?
+
+
+```{r}
+# --- model specification: regression tree
+rpart_mod <- parsnip::decision_tree() %>% 
+  set_engine("rpart") %>% # set computational engine
+  set_mode("regression") %>% # set model mode: regression *instead of classification
+  translate() # translate model specification; into code object; specific to particular engine (R package)
+
+# --- fit the regression tree 
+fit_tree <- rpart_mod %>% 
+  parsnip::fit(annual_sal ~ total_spend + total_spend_vol + lon + lat + balance + gender + age,
+               data = model_data)
+```
+
+```{r}
+# --- plot rpart model
+rpart.plot::prp(fit_tree$fit,
+                type = 3, # draw separate split labels; for left & right directions
+                ni = T, # display node indeces
+                nn = T, # display node numbers
+                box.palette = "RdBu") # palette to colour node boxes
+```
+
+From the analysis above, the relationship between annual salary & the covariates are mostly non-linear. So it is more likely the decision tree would work better in this case.
+
+### how would you test the performance of this model?
+
+To test the performance of the model, we first split the data into say 2/3 training and 1/3 test set. Then, the model is fitted using the training set and evaluated against the test set which is completely unseen by the model. 
+
+Furthermore, cross validation (including an extra cross validation set) could also be used to tune the parameters such as `cost_complexity` and `min_n`.
